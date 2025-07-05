@@ -1,13 +1,19 @@
 import React, { useState, useEffect } from 'react';
 import { rtdb } from '../firebase';
-import { ref, update } from 'firebase/database';
+import { ref, update, onValue, query, orderByChild, equalTo } from 'firebase/database';
+import { useAuth } from '../AuthContext';
+import './EditRequestForm.css';
 
-const EditRequestForm = ({ request, onFormSubmit }) => {
+const EditRequestForm = ({ request, onFormSubmit, onCancelEdit }) => {
+  const { userRole } = useAuth();
   const [deviceType, setDeviceType] = useState(request.deviceType || '');
   const [problemDescription, setProblemDescription] = useState(request.problemDescription || '');
   const [status, setStatus] = useState(request.status || 'Pending');
   const [priority, setPriority] = useState(request.priority || 'Medium');
   const [technician, setTechnician] = useState(request.technician || '');
+  const [technicians, setTechnicians] = useState([]);
+  const [vendor, setVendor] = useState(request.vendor || '');
+  const [vendors, setVendors] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
@@ -18,7 +24,35 @@ const EditRequestForm = ({ request, onFormSubmit }) => {
       setStatus(request.status || 'Pending');
       setPriority(request.priority || 'Medium');
       setTechnician(request.technician || '');
+      setVendor(request.vendor || '');
     }
+
+    const techniciansQuery = query(ref(rtdb, 'users'), orderByChild('role'), equalTo('technician'));
+    const unsubscribe = onValue(techniciansQuery, (snapshot) => {
+      const data = snapshot.val();
+      if (data) {
+        const technicianList = Object.values(data).map(user => user.email);
+        setTechnicians(technicianList);
+      } else {
+        setTechnicians([]);
+      }
+    });
+
+    const vendorsRef = ref(rtdb, 'vendors');
+    const unsubscribeVendors = onValue(vendorsRef, (snapshot) => {
+      const data = snapshot.val();
+      if (data) {
+        const vendorList = Object.values(data).map(vendor => vendor.name);
+        setVendors(vendorList);
+      } else {
+        setVendors([]);
+      }
+    });
+
+    return () => { 
+      unsubscribe();
+      unsubscribeVendors();
+    };
   }, [request]);
 
   const handleSubmit = async (e) => {
@@ -34,6 +68,7 @@ const EditRequestForm = ({ request, onFormSubmit }) => {
         status,
         priority,
         technician,
+        vendor,
         updatedAt: new Date(),
       });
       onFormSubmit();
@@ -45,121 +80,110 @@ const EditRequestForm = ({ request, onFormSubmit }) => {
   };
 
   return (
-    <div style={styles.authInner}>
-      <h3 style={styles.title}>Edit Request: {request.id}</h3>
-      <form style={styles.form} onSubmit={handleSubmit}>
-        <div style={styles.formGroup}>
-          <label style={styles.label}>Device Type:</label>
+    <div className="edit-request-container">
+      <h3 className="edit-request-title">Edit Request: {request.id}</h3>
+      <form onSubmit={handleSubmit}>
+        <div className="form-group">
+          <label className="form-label" htmlFor="deviceType">Device Type:</label>
           <input
+            id="deviceType"
             type="text"
             value={deviceType}
             onChange={(e) => setDeviceType(e.target.value)}
             required
-            style={styles.formControl}
+            className="form-control"
+            disabled={userRole === 'admin'}
           />
         </div>
-        <div style={styles.formGroup}>
-          <label style={styles.label}>Problem Description:</label>
+        <div className="form-group">
+          <label className="form-label" htmlFor="problemDescription">Problem Description:</label>
           <textarea
+            id="problemDescription"
             value={problemDescription}
             onChange={(e) => setProblemDescription(e.target.value)}
             required
-            style={styles.formControl}
+            className="form-control"
+            disabled={userRole === 'admin'}
+            rows="5"
           ></textarea>
         </div>
-        <div style={styles.formGroup}>
-          <label style={styles.label}>Status:</label>
-          <select value={status} onChange={(e) => setStatus(e.target.value)} style={styles.formControl}>
+        <div className="form-group">
+          <label className="form-label" htmlFor="status">Status:</label>
+          <select 
+            id="status"
+            value={status} 
+            onChange={(e) => setStatus(e.target.value)} 
+            className="form-control" 
+            disabled={userRole !== 'admin'}
+          >
             <option value="Pending">Pending</option>
             <option value="In Progress">In Progress</option>
             <option value="Completed">Completed</option>
             <option value="Cancelled">Cancelled</option>
           </select>
         </div>
-        <div style={styles.formGroup}>
-          <label style={styles.label}>Priority:</label>
-          <select value={priority} onChange={(e) => setPriority(e.target.value)} style={styles.formControl}>
+        <div className="form-group">
+          <label className="form-label" htmlFor="priority">Priority:</label>
+          <select 
+            id="priority"
+            value={priority} 
+            onChange={(e) => setPriority(e.target.value)} 
+            className="form-control" 
+            disabled={userRole !== 'admin'}
+          >
             <option value="Low">Low</option>
             <option value="Medium">Medium</option>
             <option value="High">High</option>
           </select>
         </div>
-        <div style={styles.formGroup}>
-          <label style={styles.label}>Technician (Optional):</label>
-          <input
-            type="text"
+        <div className="form-group">
+          <label className="form-label" htmlFor="technician">Technician:</label>
+          <select
+            id="technician"
             value={technician}
             onChange={(e) => setTechnician(e.target.value)}
-            style={styles.formControl}
-          />
+            className="form-control"
+            disabled={userRole !== 'admin'}
+          >
+            <option value="">Select Technician</option>
+            {technicians.map((techEmail) => (
+              <option key={techEmail} value={techEmail}>
+                {techEmail}
+              </option>
+            ))}
+          </select>
         </div>
-        <div style={styles.dGrid}>
-          <button type="submit" disabled={loading} style={styles.button}>
+        <div className="form-group">
+          <label className="form-label" htmlFor="vendor">Vendor:</label>
+          <select
+            id="vendor"
+            value={vendor}
+            onChange={(e) => setVendor(e.target.value)}
+            className="form-control"
+            disabled={userRole !== 'admin'}
+          >
+            <option value="">Select Vendor</option>
+            {vendors.map((vendorEmail) => (
+              <option key={vendorEmail} value={vendorEmail}>
+                {vendorEmail}
+              </option>
+            ))}
+          </select>
+        </div>
+        <div className="d-grid">
+          <button type="submit" disabled={loading} className="update-button">
             {loading ? 'Updating...' : 'Update Request'}
           </button>
+          <button type="button" onClick={onCancelEdit} className="cancel-edit-button">
+            Cancel Edit
+          </button>
         </div>
-        {error && <p style={styles.message}>Error: {error}</p>}
+        {error && <p className="message error">Error: {error}</p>}
       </form>
     </div>
   );
 };
 
-const styles = {
-  authInner: {
-    background: '#fff',
-    borderRadius: '8px',
-    boxShadow: '0 0 10px rgba(0, 0, 0, 0.1)',
-    padding: '30px',
-  },
-  form: {},
-  title: {
-    textAlign: 'center',
-    marginBottom: '20px',
-    color: '#333',
-    fontWeight: 'bold',
-  },
-  formGroup: {
-    marginBottom: '15px',
-  },
-  label: {
-    display: 'block',
-    marginBottom: '5px',
-    fontWeight: 'bold',
-    textAlign: 'left',
-  },
-  formControl: {
-    display: 'block',
-    width: '100%',
-    padding: '10px',
-    fontSize: '1rem',
-    lineHeight: '1.5',
-    color: '#495057',
-    backgroundColor: '#fff',
-    backgroundClip: 'padding-box',
-    border: '1px solid #ced4da',
-    borderRadius: '0.25rem',
-    transition: 'border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out',
-  },
-  dGrid: {
-    display: 'grid',
-    gap: '10px',
-  },
-  button: {
-    width: '100%',
-    padding: '10px',
-    fontSize: '1rem',
-    borderRadius: '0.25rem',
-    border: 'none',
-    backgroundColor: '#007bff',
-    color: '#fff',
-    cursor: 'pointer',
-    transition: 'background-color 0.2s ease-in-out',
-  },
-  message: {
-    color: 'red',
-    textAlign: 'center',
-    marginTop: '10px',
-  },
-};
+
 
 export default EditRequestForm;

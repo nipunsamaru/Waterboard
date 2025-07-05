@@ -8,6 +8,7 @@ const SignUpPage = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [role, setRole] = useState('user'); // Default role for new sign-ups
+  const userRoles = ['user', 'manager', 'engineer', 'admin', 'technician'];
 
   const [error, setError] = useState(null);
   const navigate = useNavigate();
@@ -130,6 +131,22 @@ const SignUpPage = () => {
             onChange={(e) => setPassword(e.target.value)}
             required
           />
+        </div>
+
+        <div style={styles.formGroup}>
+          <label style={styles.label}>Role</label>
+          <select
+            style={styles.input}
+            value={role}
+            onChange={(e) => setRole(e.target.value)}
+            required
+          >
+            {userRoles.map((r) => (
+              <option key={r} value={r}>
+                {r.charAt(0).toUpperCase() + r.slice(1)}
+              </option>
+            ))}
+          </select>
         </div>
 
         <button type="submit" style={styles.button}>

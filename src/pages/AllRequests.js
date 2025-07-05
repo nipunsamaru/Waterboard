@@ -88,8 +88,7 @@ const AllRequests = () => {
 
       {editingRequest && (
         <div style={styles.formSection}>
-          <EditRequestForm request={editingRequest} onFormSubmit={handleFormSubmit} />
-          <button onClick={() => setEditingRequest(null)} style={styles.buttonSecondary}>Cancel Edit</button>
+          <EditRequestForm request={editingRequest} onFormSubmit={handleFormSubmit} onCancelEdit={() => setEditingRequest(null)} />
         </div>
       )}
 

@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { rtdb } from '../firebase';
 import { ref, push } from 'firebase/database';
 import { useAuth } from '../AuthContext';
+import './RequestForm.css';
 
 const RequestForm = ({ onFormSubmit }) => {
   const { currentUser } = useAuth();
@@ -47,119 +48,66 @@ const RequestForm = ({ onFormSubmit }) => {
   };
 
   return (
-    <div style={styles.authInner}>
-      <form style={styles.form} onSubmit={handleSubmit}>
-            <h3 style={styles.title}>Submit a Repair Request</h3>
+    <div className="request-form-container">
+      <form onSubmit={handleSubmit}>
+            <h3 className="request-form-title">Submit a Repair Request</h3>
 
-            <div style={styles.formGroup}>
-              <label style={styles.label} htmlFor="deviceType">Device Type:</label>
-              <input
-                type="text"
+            <div className="form-group">
+              <label className="form-label" htmlFor="deviceType">Device Type:</label>
+              <select
                 id="deviceType"
-                style={styles.formControl}
+                className="form-control"
                 value={deviceType}
                 onChange={(e) => setDeviceType(e.target.value)}
                 required
-              />
+              >
+                <option value="">Select Device Type</option>
+                <option value="PC">PC</option>
+                <option value="Laptop">Laptop</option>
+                <option value="Printer">Printer</option>
+                <option value="Photocopier">Photocopier</option>
+              </select>
             </div>
-            <div style={styles.formGroup}>
-              <label style={styles.label} htmlFor="deviceId">Device ID:</label>
+            <div className="form-group">
+              <label className="form-label" htmlFor="deviceId">Device ID:</label>
               <input
                 type="text"
                 id="deviceId"
-                style={styles.formControl}
+                className="form-control"
                 value={deviceId}
                 onChange={(e) => setDeviceId(e.target.value)}
                 required
               />
             </div>
-            <div style={styles.formGroup}>
-              <label style={styles.label} htmlFor="problemDescription">Problem Description:</label>
+            <div className="form-group">
+              <label className="form-label" htmlFor="problemDescription">Problem Description:</label>
               <textarea
                 id="problemDescription"
-                style={styles.formControl}
+                className="form-control"
                 value={problemDescription}
                 onChange={(e) => setProblemDescription(e.target.value)}
                 rows="5"
                 required
               ></textarea>
             </div>
-            <div style={styles.formGroup}>
-              <label style={styles.label} htmlFor="image">Attach Image (Optional):</label>
+            <div className="form-group">
+              <label className="form-label" htmlFor="image">Attach Image (Optional):</label>
               <input
                 type="file"
                 id="image"
-                style={styles.formControl}
+                className="form-control"
                 onChange={(e) => setImage(e.target.files[0])}
               />
             </div>
-            <div style={styles.dGrid}>
-              <button type="submit" style={styles.button}>
+            <div className="d-grid">
+              <button type="submit" className="submit-button">
                 Submit Request
               </button>
             </div>
-            {message && <p style={styles.message}>{message}</p>}
+            {message && <p className="message">{message}</p>}
           </form>
         </div>
   );
-};
-
-const styles = {
-  authInner: {
-    background: '#fff',
-    borderRadius: '8px',
-    boxShadow: '0 0 10px rgba(0, 0, 0, 0.1)',
-    padding: '30px',
-  },
-  form: {},
-  title: {
-    textAlign: 'center',
-    marginBottom: '20px',
-    color: '#333',
-    fontWeight: 'bold',
-  },
-  formGroup: {
-    marginBottom: '15px',
-  },
-  label: {
-    display: 'block',
-    marginBottom: '5px',
-    fontWeight: 'bold',
-    textAlign: 'left',
-  },
-  formControl: {
-    display: 'block',
-    width: '100%',
-    padding: '10px',
-    fontSize: '1rem',
-    lineHeight: '1.5',
-    color: '#495057',
-    backgroundColor: '#fff',
-    backgroundClip: 'padding-box',
-    border: '1px solid #ced4da',
-    borderRadius: '0.25rem',
-    transition: 'border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out',
-  },
-  dGrid: {
-    display: 'grid',
-    gap: '10px',
-  },
-  button: {
-    width: '100%',
-    padding: '10px',
-    fontSize: '1rem',
-    borderRadius: '0.25rem',
-    border: 'none',
-    backgroundColor: '#007bff',
-    color: '#fff',
-    cursor: 'pointer',
-    transition: 'background-color 0.2s ease-in-out',
-  },
-  message: {
-    color: 'green',
-    textAlign: 'center',
-    marginTop: '10px',
-  },
 };
 
 export default RequestForm;

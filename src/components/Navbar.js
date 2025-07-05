@@ -24,35 +24,33 @@ const Navbar = () => {
       <div style={styles.navbarBrand}>
         <Link to="/" style={styles.navbarBrandLink}>Online Repair System</Link>
       </div>
-      <ul style={styles.navbarNav}>
+      <div style={styles.navbarNav}>
         {currentUser ? (
           <>
-            <li style={styles.navItem}>
-              {userRole && <Link to={`/${userRole}-dashboard`} style={styles.navLink}>Dashboard</Link>}
-            </li>
-            <li style={styles.navItem}>
-              <Link to="/admin/all-requests" style={styles.navLink}>Requests</Link>
-            </li>
+            <button style={styles.navButton} onClick={() => navigate(`/${userRole}-dashboard`)}>Home</button>
             {userRole === 'admin' && (
-              <li style={styles.navItem}>
-                <Link to="/admin/users-by-role" style={styles.navLink}>Users</Link>
-              </li>
+              <button style={styles.navButton} onClick={() => navigate('/admin/users-by-role')}>Users</button>
             )}
-            <li style={styles.navItem}>
-              <button onClick={handleSignOut} style={styles.logoutButton}>Logout</button>
-            </li>
+            {userRole === 'admin' && (
+              <button style={styles.navButton} onClick={() => navigate('/admin/all-requests')}>Requests</button>
+            )}
+            
+            {userRole === 'admin' && (
+              <button style={styles.navButton} onClick={() => navigate('/admin/reports')}>Reports</button>
+            )}
+            {userRole === 'admin' && (
+              <button style={styles.navButton} onClick={() => navigate('/admin/vendor-management')}>Vendor</button>
+            )}
+            
+            <button onClick={handleSignOut} style={styles.logoutButton}>Logout</button>
           </>
         ) : (
           <>
-            <li style={styles.navItem}>
-              <Link to="/login" style={styles.navLink}>Login</Link>
-            </li>
-            <li style={styles.navItem}>
-              <Link to="/signup" style={styles.navLink}>Sign Up</Link>
-            </li>
+            <Link to="/login" style={styles.navLink}>Login</Link>
+            <Link to="/signup" style={styles.navLink}>Sign Up</Link>
           </>
         )}
-      </ul>
+      </div>
     </nav>
   );
 };
@@ -76,13 +74,21 @@ const styles = {
     textDecoration: 'none',
   },
   navbarNav: {
-    listStyle: 'none',
-    margin: 0,
-    padding: 0,
     display: 'flex',
+    gap: '10px',
   },
-  navItem: {
-    marginLeft: '20px',
+  navButton: {
+    padding: '10px 15px',
+    backgroundColor: '#007bff',
+    color: 'white',
+    border: 'none',
+    borderRadius: '5px',
+    cursor: 'pointer',
+    fontSize: '16px',
+    transition: 'background-color 0.2s',
+    '&:hover': {
+      backgroundColor: '#0056b3',
+    },
   },
   navLink: {
     color: '#fff',

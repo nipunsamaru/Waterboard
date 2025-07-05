@@ -14,6 +14,8 @@ import RequestForm from './components/RequestForm';
 import UsersByRolePage from './pages/UsersByRolePage'; // Import the new component
 import AllRequests from './pages/AllRequests';
 import { AuthProvider, useAuth } from './AuthContext';
+import VendorManagement from './pages/VendorManagement';
+import Reports from './pages/Reports';
 
 const PrivateRoute = ({ children, allowedRoles }) => {
   const { currentUser, userRole, loading } = useAuth();
@@ -50,9 +52,12 @@ function App() {
           <Route path="/manager-dashboard" element={<PrivateRoute allowedRoles={['manager']}><ManagerDashboard /></PrivateRoute>} />
           <Route path="/engineer-dashboard" element={<PrivateRoute allowedRoles={['engineer']}><EngineerDashboard /></PrivateRoute>} />
           <Route path="/admin-dashboard" element={<PrivateRoute allowedRoles={['admin']}><AdminDashboard /></PrivateRoute>} />
+          <Route path="/request-form" element={<PrivateRoute allowedRoles={['user']}><RequestForm /></PrivateRoute>} />
           <Route path="/admin/request-form" element={<PrivateRoute allowedRoles={['admin']}><RequestForm /></PrivateRoute>} />
           <Route path="/admin/users-by-role" element={<PrivateRoute allowedRoles={['admin']}><UsersByRolePage /></PrivateRoute>} /> {/* New route */}
           <Route path="/admin/all-requests" element={<PrivateRoute allowedRoles={['admin']}><AllRequests /></PrivateRoute>} />
+          <Route path="/admin/vendor-management" element={<PrivateRoute allowedRoles={['admin']}><VendorManagement /></PrivateRoute>} />
+          <Route path="/admin/reports" element={<PrivateRoute allowedRoles={['admin']}><Reports /></PrivateRoute>} />
         </Routes>
       </div>
     </Router>
