@@ -45,7 +45,18 @@ function App() {
         <Routes>
           <Route path="/login" element={<LoginPage />} />
           <Route path="/signup" element={<SignUpPage />} />
-          <Route path="/" element={<PrivateRoute allowedRoles={['user', 'technician', 'manager', 'engineer', 'admin']}><HomePage /></PrivateRoute>} />
+          <Route path="/" element={<PrivateRoute allowedRoles={['user', 'technician', 'manager', 'engineer', 'admin']}>
+  {({ userRole }) => {
+    switch(userRole) {
+      case 'admin': return <Navigate to="/admin-dashboard" replace />;
+      case 'technician': return <Navigate to="/technician-dashboard" replace />;
+      case 'user': return <Navigate to="/user-dashboard" replace />;
+      case 'manager': return <Navigate to="/manager-dashboard" replace />;
+      case 'engineer': return <Navigate to="/engineer-dashboard" replace />;
+      default: return <HomePage />;
+    }
+  }}
+</PrivateRoute>} />
 
           <Route path="/user-dashboard" element={<PrivateRoute allowedRoles={['user']}><UserDashboard /></PrivateRoute>} />
           <Route path="/technician-dashboard" element={<PrivateRoute allowedRoles={['technician']}><TechnicianDashboard /></PrivateRoute>} />

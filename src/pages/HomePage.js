@@ -1,10 +1,12 @@
 import React from 'react';
-<<<<<<< HEAD
+import { Link } from 'react-router-dom';
+import { getAuth, signOut } from 'firebase/auth';
 import { auth } from '../firebase';
-import { signOut } from 'firebase/auth';
 import '../App.css';
 
 function HomePage() {
+  const user = auth.currentUser;
+
   const handleSignOut = async () => {
     try {
       await signOut(auth);
@@ -12,20 +14,6 @@ function HomePage() {
       console.error("Error signing out: ", error);
     }
   };
-
-  return (
-    <div className="App">
-      <h1>Welcome to the Home Page!</h1>
-      <p>You are logged in.</p>
-      <button onClick={handleSignOut}>Sign Out</button>
-=======
-import { Link } from 'react-router-dom';
-import { getAuth } from 'firebase/auth';
-import { app } from '../firebase';
-
-function HomePage() {
-  const auth = getAuth(app);
-  const user = auth.currentUser;
 
   return (
     <div className="home-page">
@@ -81,13 +69,8 @@ function HomePage() {
       <footer className="footer-section">
         <p>&copy; 2023 Online Computer Repair Monitoring System. All rights reserved.</p>
       </footer>
->>>>>>> aa7b0d9f7c4a74912b4f3080cb6eeb5448b89f1e
     </div>
   );
 }
 
-<<<<<<< HEAD
 export default HomePage;
-=======
-export default HomePage;
->>>>>>> aa7b0d9f7c4a74912b4f3080cb6eeb5448b89f1e

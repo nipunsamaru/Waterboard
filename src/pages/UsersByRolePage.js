@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { rtdb } from '../firebase';
-import { ref, get, child } from 'firebase/database';
+import { ref, get, child, update } from 'firebase/database';
 import { useAuth } from '../AuthContext';
 import AddUserForm from '../components/AddUserForm';
 
@@ -9,10 +9,14 @@ const UsersByRolePage = () => {
   const [users, setUsers] = useState({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [activeTab, setActiveTab] = useState('all'); // 'all' or a specific role
-  const [showAddUserForm, setShowAddUserForm] = useState(null); // Stores the role for which the form is shown
+  const [activeTab, setActiveTab] = useState('all');
+  const [showAddUserForm, setShowAddUserForm] = useState(null);
   const [totalUsersCount, setTotalUsersCount] = useState(0);
   const [roleCounts, setRoleCounts] = useState({});
+  const [editingUser, setEditingUser] = useState(null);
+  const [newRole, setNewRole] = useState('');
+
+  const availableRoles = ['user', 'admin', 'manager', 'engineer', 'technician'];
 
   const fetchUsers = async () => {
     try {
@@ -51,6 +55,26 @@ const UsersByRolePage = () => {
     }
   };
 
+  const handleRoleChange = async (userId, currentRole, selectedRole) => {
+    if (selectedRole === currentRole) {
+      setEditingUser(null);
+      return;
+    }
+
+    try {
+      await update(ref(rtdb, `users/${userId}`), {
+        role: selectedRole
+      });
+      
+      alert(`User role updated to ${selectedRole} successfully!`);
+      setEditingUser(null);
+      fetchUsers(); // Refresh the user list
+    } catch (error) {
+      console.error('Error updating user role:', error);
+      alert('Failed to update user role: ' + error.message);
+    }
+  };
+
   useEffect(() => {
     if (userRole !== 'admin') {
       setError('Access Denied: Only administrators can view this page.');
@@ -58,7 +82,7 @@ const UsersByRolePage = () => {
       return;
     }
     fetchUsers();
-  }, [userRole, fetchUsers]);
+  }, [userRole]);
 
   const roles = Object.keys(users).sort();
 
@@ -72,7 +96,7 @@ const UsersByRolePage = () => {
 
   return (
     <div style={styles.container}>
-      <h2 style={styles.title}>Users by Role</h2>
+      <h2 style={styles.title}>User Management - Assign Roles</h2>
 
       <div style={styles.summaryContainer}>
         <div style={styles.summaryBox}>
@@ -119,18 +143,58 @@ const UsersByRolePage = () => {
             roles.map(role => (
               <div key={role} style={styles.roleSection}>
                 <h3 style={styles.roleTitle}>{role.charAt(0).toUpperCase() + role.slice(1)}s</h3>
+                {showAddUserForm === role && (
+                  <AddUserForm roleToAdd={role} onUserAdded={fetchUsers} />
+                )}
                 <ul style={styles.userList}>
-                  {showAddUserForm === activeTab && (
-                    <AddUserForm roleToAdd={activeTab} onUserAdded={fetchUsers} />
-                  )}
-                  {showAddUserForm === role && (
-                    <AddUserForm roleToAdd={role} onUserAdded={fetchUsers} />
-                  )}
                   {users[role].map(user => (
                     <li key={user.uid} style={styles.userItem}>
-                      <p><strong>Email:</strong> {user.email}</p>
-                      <p><strong>UID:</strong> {user.uid}</p>
-                      {/* Add more user details as needed */}
+                      <div style={styles.userInfo}>
+                        <p><strong>Email:</strong> {user.email}</p>
+                        <p><strong>Current Role:</strong> {user.role}</p>
+                        <p><strong>UID:</strong> {user.uid}</p>
+                      </div>
+                      <div style={styles.userActions}>
+                        {editingUser === user.uid ? (
+                          <div style={styles.roleEditContainer}>
+                            <select
+                              value={newRole}
+                              onChange={(e) => setNewRole(e.target.value)}
+                              style={styles.roleSelect}
+                            >
+                              <option value="">Select Role</option>
+                              {availableRoles.map(roleOption => (
+                                <option key={roleOption} value={roleOption}>
+                                  {roleOption.charAt(0).toUpperCase() + roleOption.slice(1)}
+                                </option>
+                              ))}
+                            </select>
+                            <button
+                              onClick={() => handleRoleChange(user.uid, user.role, newRole)}
+                              style={styles.saveButton}
+                              disabled={!newRole}
+                            >
+                              Save
+                            </button>
+                            <button
+                              onClick={() => setEditingUser(null)}
+                              style={styles.cancelButton}
+                            >
+                              Cancel
+                            </button>
+                          </div>
+                        ) : (
+                          <button
+                            onClick={() => {
+                              setEditingUser(user.uid);
+                              setNewRole(user.role);
+                            }}
+                            style={styles.editButton}
+                          >
+                            Change Role
+                          </button>
+                        )}
+                      </div>
                     </li>
                   ))}
                 </ul>
@@ -139,12 +203,58 @@ const UsersByRolePage = () => {
           ) : (
             <div style={styles.roleSection}>
               <h3 style={styles.roleTitle}>{activeTab.charAt(0).toUpperCase() + activeTab.slice(1)}s</h3>
+              {showAddUserForm === activeTab && (
+                <AddUserForm roleToAdd={activeTab} onUserAdded={fetchUsers} />
+              )}
               <ul style={styles.userList}>
                 {users[activeTab].map(user => (
                   <li key={user.uid} style={styles.userItem}>
-                    <p><strong>Email:</strong> {user.email}</p>
-                    <p><strong>UID:</strong> {user.uid}</p>
-                    {/* Add more user details as needed */}
+                    <div style={styles.userInfo}>
+                      <p><strong>Email:</strong> {user.email}</p>
+                      <p><strong>Current Role:</strong> {user.role}</p>
+                      <p><strong>UID:</strong> {user.uid}</p>
+                    </div>
+                    <div style={styles.userActions}>
+                      {editingUser === user.uid ? (
+                        <div style={styles.roleEditContainer}>
+                          <select
+                            value={newRole}
+                            onChange={(e) => setNewRole(e.target.value)}
+                            style={styles.roleSelect}
+                          >
+                            <option value="">Select Role</option>
+                            {availableRoles.map(roleOption => (
+                              <option key={roleOption} value={roleOption}>
+                                {roleOption.charAt(0).toUpperCase() + roleOption.slice(1)}
+                              </option>
+                            ))}
+                          </select>
+                          <button
+                            onClick={() => handleRoleChange(user.uid, user.role, newRole)}
+                            style={styles.saveButton}
+                            disabled={!newRole}
+                          >
+                            Save
+                          </button>
+                          <button
+                            onClick={() => setEditingUser(null)}
+                            style={styles.cancelButton}
+                          >
+                            Cancel
+                          </button>
+                        </div>
+                      ) : (
+                        <button
+                          onClick={() => {
+                            setEditingUser(user.uid);
+                            setNewRole(user.role);
+                          }}
+                          style={styles.editButton}
+                        >
+                          Change Role
+                        </button>
+                      )}
+                    </div>
                   </li>
                 ))}
               </ul>
@@ -156,6 +266,7 @@ const UsersByRolePage = () => {
   );
 };
 
+// Fixed: Changed from 'newStyles' to 'styles' and added missing style properties
 const styles = {
   container: {
     padding: '20px',
@@ -217,13 +328,10 @@ const styles = {
     border: 'none',
     borderRadius: '5px',
     padding: '8px 12px',
-    marginLeft: '10px',
+    marginTop: '10px',
     cursor: 'pointer',
     fontSize: '0.9em',
     transition: 'background-color 0.2s ease-in-out',
-    '&:hover': {
-      backgroundColor: '#218838',
-    },
   },
   tabButton: {
     padding: '12px 20px',
@@ -238,10 +346,6 @@ const styles = {
     transition: 'all 0.3s ease',
     whiteSpace: 'nowrap',
     outline: 'none',
-    '&:hover': {
-      color: '#007bff',
-      borderBottomColor: '#a2d2ff',
-    },
   },
   activeTabButton: {
     padding: '12px 20px',
@@ -288,8 +392,48 @@ const styles = {
     marginBottom: '12px',
     boxShadow: '0 1px 5px rgba(0,0,0,0.03)',
     display: 'flex',
-    flexDirection: 'column',
-    gap: '5px',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  userInfo: {
+    flex: 1,
+  },
+  userActions: {
+    marginLeft: '20px',
+  },
+  roleEditContainer: {
+    display: 'flex',
+    gap: '10px',
+    alignItems: 'center',
+  },
+  roleSelect: {
+    padding: '5px 10px',
+    borderRadius: '4px',
+    border: '1px solid #ddd',
+  },
+  editButton: {
+    backgroundColor: '#007bff',
+    color: 'white',
+    border: 'none',
+    padding: '5px 15px',
+    borderRadius: '4px',
+    cursor: 'pointer',
+  },
+  saveButton: {
+    backgroundColor: '#28a745',
+    color: 'white',
+    border: 'none',
+    padding: '5px 15px',
+    borderRadius: '4px',
+    cursor: 'pointer',
+  },
+  cancelButton: {
+    backgroundColor: '#6c757d',
+    color: 'white',
+    border: 'none',
+    padding: '5px 15px',
+    borderRadius: '4px',
+    cursor: 'pointer',
   },
   errorMessage: {
     color: '#dc3545',
@@ -301,6 +445,6 @@ const styles = {
     border: '1px solid #f5c6cb',
     borderRadius: '8px',
   },
-}; 
+};
 
 export default UsersByRolePage;

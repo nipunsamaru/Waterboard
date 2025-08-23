@@ -1,75 +1,97 @@
 import React, { useState } from 'react';
-<<<<<<< HEAD
-import { auth } from '../firebase';
-import { signInWithEmailAndPassword } from 'firebase/auth';
-import { useNavigate } from 'react-router-dom';
-import { ref, get } from 'firebase/database';
-import { rtdb } from '../firebase';
-
-const LoginPage = () => {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState(null);
-  const navigate = useNavigate();
-
-  const handleSignIn = async (e) => {
-    e.preventDefault();
-=======
 import { Link, useNavigate } from 'react-router-dom';
-import { getAuth, signInWithEmailAndPassword } from 'firebase/auth';
-import { getDatabase, ref, get } from 'firebase/database';
-import { app } from '../firebase';
+import { auth, rtdb as database } from '../firebase';
+import { signInWithEmailAndPassword } from 'firebase/auth';
+import { ref, get } from 'firebase/database';
 
 function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const navigate = useNavigate();
-  const auth = getAuth(app);
-  const database = getDatabase(app);
+
+  const styles = {
+    container: {
+      display: 'flex',
+      justifyContent: 'center',
+      alignItems: 'center',
+      minHeight: '100vh',
+      backgroundColor: '#f8f9fa',
+    },
+    form: {
+      width: '100%',
+      maxWidth: '400px',
+      padding: '40px',
+      backgroundColor: '#ffffff',
+      borderRadius: '8px',
+      boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
+      display: 'flex',
+      flexDirection: 'column',
+      gap: '20px',
+    },
+    title: {
+      textAlign: 'center',
+      marginBottom: '30px',
+      color: '#333',
+      fontSize: '28px',
+      fontWeight: 'bold',
+    },
+    formGroup: {
+      marginBottom: '15px',
+    },
+    label: {
+      display: 'block',
+      marginBottom: '8px',
+      fontWeight: '500',
+      color: '#555',
+      textAlign: 'left',
+    },
+    input: {
+      width: '100%',
+      padding: '12px',
+      border: '1px solid #ced4da',
+      borderRadius: '5px',
+      fontSize: '16px',
+      transition: 'border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out',
+    },
+    button: {
+      width: '100%',
+      padding: '12px',
+      backgroundColor: '#007bff',
+      color: 'white',
+      border: 'none',
+      borderRadius: '5px',
+      fontSize: '18px',
+      fontWeight: '600',
+      cursor: 'pointer',
+      transition: 'background-color 0.2s ease-in-out',
+    },
+    link: {
+      textAlign: 'center',
+      marginTop: '20px',
+      fontSize: '15px',
+    },
+    linkText: {
+      color: '#007bff',
+      textDecoration: 'none',
+      fontWeight: '500',
+    },
+    errorMessage: {
+      color: '#dc3545',
+      textAlign: 'center',
+      marginBottom: '15px',
+      fontSize: '14px',
+    },
+  };
 
   const handleLogin = async (e) => {
     e.preventDefault();
     setError('');
->>>>>>> aa7b0d9f7c4a74912b4f3080cb6eeb5448b89f1e
     try {
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
 
       // Fetch user role from Realtime Database
-<<<<<<< HEAD
-      const userRef = ref(rtdb, `users/${user.uid}`);
-      const snapshot = await get(userRef);
-      if (snapshot.exists()) {
-        const userData = snapshot.val();
-        const role = userData.role;
-
-        // Navigate based on role
-        switch (role) {
-          case 'user':
-            navigate('/user-dashboard');
-            break;
-          case 'technician':
-            navigate('/technician-dashboard');
-            break;
-          case 'manager':
-            navigate('/manager-dashboard');
-            break;
-          case 'engineer':
-            navigate('/engineer-dashboard');
-            break;
-          case 'admin':
-            navigate('/admin-dashboard');
-            break;
-          default:
-            navigate('/'); // Fallback for unknown roles
-        }
-      } else {
-        navigate('/'); // Fallback if user data not found
-      }
-    } catch (error) {
-      setError(error.message);
-=======
       const userRef = ref(database, `users/${user.uid}`);
       const snapshot = await get(userRef);
       if (snapshot.exists()) {
@@ -79,18 +101,23 @@ function LoginPage() {
         // Redirect based on role
         switch (userRole) {
           case 'Admin':
+          case 'admin':
             navigate('/admin-dashboard');
             break;
           case 'Manager':
+          case 'manager':
             navigate('/manager-dashboard');
             break;
           case 'Technician':
+          case 'technician':
             navigate('/technician-dashboard');
             break;
           case 'Engineer':
+          case 'engineer':
             navigate('/engineer-dashboard');
             break;
           case 'User':
+          case 'user':
             navigate('/user-dashboard');
             break;
           default:
@@ -116,15 +143,13 @@ function LoginPage() {
           setError('Failed to login. Please check your credentials.');
           break;
       }
->>>>>>> aa7b0d9f7c4a74912b4f3080cb6eeb5448b89f1e
     }
   };
 
   return (
-<<<<<<< HEAD
     <div style={styles.container}>
-      <form style={styles.form} onSubmit={handleSignIn}>
-        <h2 style={styles.title}>Sign In</h2>
+      <form style={{...styles.form, gap: '10px'}} onSubmit={handleLogin}>
+        <h3 style={{...styles.title, marginBottom: '15px'}}>Login</h3>
         {error && <p style={styles.errorMessage}>{error}</p>}
         <div style={styles.formGroup}>
           <label style={styles.label}>Email address</label>
@@ -148,124 +173,17 @@ function LoginPage() {
             required
           />
         </div>
+
         <button type="submit" style={styles.button}>
-          Sign In
+          Login
         </button>
-        <p style={styles.signupText}>
-          Don't have an account? <a href="/signup" style={styles.signupLink}>Sign Up</a>
+
+        <p style={styles.link}>
+          Don't have an account? <Link to="/signup" style={styles.linkText}>Sign Up</Link>
         </p>
       </form>
     </div>
   );
-};
-
-const styles = {
-  container: {
-    display: 'flex',
-    justifyContent: 'center',
-    alignItems: 'center',
-    minHeight: '100vh',
-    backgroundColor: '#f0f2f5',
-    fontFamily: 'Arial, sans-serif',
-  },
-  form: {
-    backgroundColor: '#ffffff',
-    padding: '40px',
-    borderRadius: '8px',
-    boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
-    width: '100%',
-    maxWidth: '400px',
-    textAlign: 'center',
-  },
-  title: {
-    marginBottom: '30px',
-    color: '#333',
-    fontSize: '28px',
-    fontWeight: 'bold',
-  },
-  errorMessage: {
-    color: '#e74c3c',
-    marginBottom: '15px',
-    fontSize: '14px',
-  },
-  formGroup: {
-    marginBottom: '20px',
-    textAlign: 'left',
-  },
-  label: {
-    display: 'block',
-    marginBottom: '8px',
-    color: '#555',
-    fontSize: '15px',
-    fontWeight: '600',
-  },
-  input: {
-    width: 'calc(100% - 20px)',
-    padding: '12px 10px',
-    border: '1px solid #ddd',
-    borderRadius: '5px',
-    fontSize: '16px',
-    transition: 'border-color 0.3s ease',
-  },
-  button: {
-    width: '100%',
-    padding: '12px',
-    backgroundColor: '#007bff',
-    color: '#fff',
-    border: 'none',
-    borderRadius: '5px',
-    fontSize: '17px',
-    fontWeight: 'bold',
-    cursor: 'pointer',
-    marginTop: '20px',
-    transition: 'background-color 0.3s ease',
-  },
-  signupText: {
-    marginTop: '25px',
-    color: '#777',
-    fontSize: '15px',
-  },
-  signupLink: {
-    color: '#007bff',
-    textDecoration: 'none',
-    fontWeight: 'bold',
-  },
-};
-=======
-    <div className="auth-container">
-      <div className="auth-form">
-        <h2>Login</h2>
-        <form onSubmit={handleLogin}>
-          <div className="form-group">
-            <label htmlFor="email">Email:</label>
-            <input
-              type="email"
-              id="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-            />
-          </div>
-          <div className="form-group">
-            <label htmlFor="password">Password:</label>
-            <input
-              type="password"
-              id="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-            />
-          </div>
-          {error && <p className="error-message">{error}</p>}
-          <button type="submit" className="button primary">Login</button>
-        </form>
-        <p className="auth-switch">
-          Don't have an account? <Link to="/signup">Sign Up</Link>
-        </p>
-      </div>
-    </div>
-  );
 }
->>>>>>> aa7b0d9f7c4a74912b4f3080cb6eeb5448b89f1e
 
 export default LoginPage;

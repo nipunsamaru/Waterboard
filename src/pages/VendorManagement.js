@@ -1,7 +1,4 @@
-<<<<<<< HEAD
 import React, { useState, useEffect } from 'react';
-=======
->>>>>>> aa7b0d9f7c4a74912b4f3080cb6eeb5448b89f1e
 import { rtdb } from '../firebase';
 import { ref, onValue, push, remove, update } from 'firebase/database';
 
@@ -51,10 +48,7 @@ const VendorManagement = () => {
       contact: editingVendorContact,
     });
     setEditingVendorId(null);
-<<<<<<< HEAD
     setEditingVendorName('');
-=======
->>>>>>> aa7b0d9f7c4a74912b4f3080cb6eeb5448b89f1e
     setEditingVendorContact('');
   };
 
@@ -103,11 +97,7 @@ const VendorManagement = () => {
                   <input
                     type="text"
                     value={editingVendorContact}
-<<<<<<< HEAD
                     onChange={(e) => setEditingVendorContact(e.target.value)}
-=======
-                    onChange={(e) => setNewVendorContact(e.target.value)}
->>>>>>> aa7b0d9f7c4a74912b4f3080cb6eeb5448b89f1e
                     style={styles.input}
                   />
                   <button onClick={() => handleSaveEdit(vendor.id)} style={styles.saveButton}>Save</button>
@@ -208,7 +198,6 @@ const styles = {
     borderRadius: '4px',
     cursor: 'pointer',
     marginRight: '10px',
-<<<<<<< HEAD
   },
   cancelButton: {
     padding: '8px 12px',
@@ -225,5 +214,3 @@ const styles = {
 };
 
 export default VendorManagement;
-=======
->>>>>>> aa7b0d9f7c4a74912b4f3080cb6eeb5448b89f1e
