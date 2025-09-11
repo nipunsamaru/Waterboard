@@ -6,6 +6,8 @@ import html2canvas from 'html2canvas';
 
 const Reports = () => {
   const [totalRequests, setTotalRequests] = useState(0);
+  const [startDate, setStartDate] = useState('');
+  const [endDate, setEndDate] = useState('');
 
   const [requestsByMonth, setRequestsByMonth] = useState({});
   const [requestsByDeviceType, setRequestsByDeviceType] = useState({});
@@ -17,15 +19,25 @@ const Reports = () => {
     onValue(requestsRef, (snapshot) => {
       const data = snapshot.val();
       if (data) {
-        const requests = Object.values(data);
+        let requests = Object.values(data);
+
+        // Filter requests by date range
+        if (startDate && endDate) {
+          const start = new Date(startDate);
+          const end = new Date(endDate);
+          requests = requests.filter(req => {
+            const requestDate = new Date(req.createdAt);
+            return requestDate >= start && requestDate <= end;
+          });
+        }
+
         setTotalRequests(requests.length);
-        
 
 
         // Process requests by month
         const monthlyCounts = requests.reduce((acc, req) => {
-          if (req.dateSubmitted) {
-            const month = new Date(req.dateSubmitted).toLocaleString('default', { month: 'short', year: 'numeric' });
+          if (req.createdAt) {
+            const month = new Date(req.createdAt).toLocaleString('default', { month: 'short', year: 'numeric' });
             acc[month] = (acc[month] || 0) + 1;
           }
           return acc;
@@ -70,7 +82,7 @@ const Reports = () => {
 
       }
     });
-  }, []);
+  }, [startDate, endDate]);
 
   const generatePdfReport = () => {
     const input = document.getElementById('report-content');
@@ -102,6 +114,33 @@ const Reports = () => {
       
       <div id="report-container" style={styles.reportsContainer}>
         <div id="report-content">
+          <div style={styles.headerSection}>
+            <img src="/logo.png" alt="Company Logo" style={styles.logo} />
+            <div style={styles.addressContainer}>
+              <p style={styles.companyName}>National Water Supply & Drainage Board</p>
+              <p style={styles.addressLine}>Regional Office,</p>
+              <p style={styles.addressLine}>Siridammarathana Mawatha,</p>
+              <p style={styles.addressLine}>Ampara</p>
+            </div>
+          </div>
+          <div style={styles.dateFilter}>
+            <label htmlFor="startDate">From:</label>
+            <input
+              type="date"
+              id="startDate"
+              value={startDate}
+              onChange={(e) => setStartDate(e.target.value)}
+              style={styles.dateInput}
+            />
+            <label htmlFor="endDate">To:</label>
+            <input
+              type="date"
+              id="endDate"
+              value={endDate}
+              onChange={(e) => setEndDate(e.target.value)}
+              style={styles.dateInput}
+            />
+          </div>
           <div style={styles.reportSection}>
             <div style={styles.reportRow}>
               <div style={styles.reportLabel}>Total Requests:</div>
@@ -175,6 +214,40 @@ const styles = {
     boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
     maxWidth: '800px',
     margin: '0 auto',
+  },
+  headerSection: {
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    marginBottom: '20px',
+  },
+  logo: {
+    width: '100%',
+    height: '100px',
+    marginBottom: '30px',
+  },
+  addressContainer: {
+    textAlign: 'center',
+  },
+  companyName: {
+    fontWeight: 'bold',
+    fontSize: '20px',
+    margin: '0 0 5px 0',
+  },
+  addressLine: {
+    margin: '0 0 2px 0',
+    fontSize: '14px',
+  },
+  dateFilter: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '10px',
+    marginBottom: '20px',
+  },
+  dateInput: {
+    padding: '8px',
+    borderRadius: '4px',
+    border: '1px solid #ced4da',
   },
   reportSection: {
     marginBottom: '30px',
