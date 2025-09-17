@@ -27,6 +27,7 @@ const Navbar = () => {
       <div style={styles.navbarNav}>
         {currentUser ? (
           <>
+            <span style={styles.userEmail}>{currentUser.email}</span>
             <button style={styles.navButton} onClick={() => navigate(`/${userRole}-dashboard`)}>Home</button>
             {userRole === 'admin' && (
               <button style={styles.navButton} onClick={() => navigate('/admin/users-by-role')}>Users</button>
@@ -107,6 +108,12 @@ const styles = {
     padding: '5px 10px',
     borderRadius: '5px',
     transition: 'background-color 0.3s ease',
+  },
+  userEmail: {
+    color: '#fff',
+    fontSize: '16px',
+    marginRight: '10px',
+    marginTop: '10px',
   },
 };
 

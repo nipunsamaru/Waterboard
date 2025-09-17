@@ -46,7 +46,7 @@ const SupplyDivisionDocument = ({ partsRequest, onClose }) => {
           <h2 style={styles.title}>Supply Division Status Document</h2>
           <div style={styles.headerButtons}>
             <button style={styles.printButton} onClick={handlePrint}>
-              Print Document
+              Print/Save as PDF
             </button>
             <button style={styles.closeButton} onClick={onClose}>
               Close

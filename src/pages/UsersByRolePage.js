@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { rtdb } from '../firebase';
-import { ref, get, child, update } from 'firebase/database';
+import { ref, get, child, update, remove } from 'firebase/database';
 import { useAuth } from '../AuthContext';
 import AddUserForm from '../components/AddUserForm';
+import { getAuth, deleteUser as firebaseDeleteUser } from "firebase/auth";
 
 const UsersByRolePage = () => {
   const { userRole } = useAuth();
@@ -72,6 +73,28 @@ const UsersByRolePage = () => {
     } catch (error) {
       console.error('Error updating user role:', error);
       alert('Failed to update user role: ' + error.message);
+    }
+  };
+
+  const handleDeleteUser = async (userId, userEmail) => {
+    if (window.confirm(`Are you sure you want to delete user ${userEmail}? This action cannot be undone.`)) {
+      try {
+        // Delete from Realtime Database
+        await remove(ref(rtdb, `users/${userId}`));
+
+        // Delete from Firebase Authentication (requires admin SDK or callable function)
+        // For client-side, this is generally handled by a backend function.
+        // If you are running this in a client-side context, direct deletion of other users
+        // from Firebase Auth is not possible without re-authentication of the *current* user
+        // or using a Cloud Function/Admin SDK.
+        // For demonstration, we'll assume a mechanism (like a Cloud Function) handles Auth deletion.
+        // If this were a real app, you'd trigger a Cloud Function here.
+        alert(`User ${userEmail} deleted successfully! (Auth deletion might require backend)`);
+        fetchUsers(); // Refresh the user list
+      } catch (error) {
+        console.error('Error deleting user:', error);
+        alert('Failed to delete user: ' + error.message);
+      }
     }
   };
 
@@ -184,15 +207,23 @@ const UsersByRolePage = () => {
                             </button>
                           </div>
                         ) : (
-                          <button
-                            onClick={() => {
-                              setEditingUser(user.uid);
-                              setNewRole(user.role);
-                            }}
-                            style={styles.editButton}
-                          >
-                            Change Role
-                          </button>
+                          <>
+                            <button
+                              onClick={() => {
+                                setEditingUser(user.uid);
+                                setNewRole(user.role);
+                              }}
+                              style={styles.editButton}
+                            >
+                              Change Role
+                            </button>
+                            <button
+                              onClick={() => handleDeleteUser(user.uid, user.email)}
+                              style={styles.deleteButton}
+                            >
+                              Delete
+                            </button>
+                          </>
                         )}
                       </div>
                     </li>
@@ -244,15 +275,23 @@ const UsersByRolePage = () => {
                           </button>
                         </div>
                       ) : (
-                        <button
-                          onClick={() => {
-                            setEditingUser(user.uid);
-                            setNewRole(user.role);
-                          }}
-                          style={styles.editButton}
-                        >
-                          Change Role
-                        </button>
+                        <>
+                          <button
+                            onClick={() => {
+                              setEditingUser(user.uid);
+                              setNewRole(user.role);
+                            }}
+                            style={styles.editButton}
+                          >
+                            Change Role
+                          </button>
+                          <button
+                            onClick={() => handleDeleteUser(user.uid, user.email)}
+                            style={styles.deleteButton}
+                          >
+                            Delete
+                          </button>
+                        </>
                       )}
                     </div>
                   </li>
@@ -434,6 +473,15 @@ const styles = {
     padding: '5px 15px',
     borderRadius: '4px',
     cursor: 'pointer',
+  },
+  deleteButton: {
+    backgroundColor: '#dc3545',
+    color: 'white',
+    border: 'none',
+    padding: '5px 15px',
+    borderRadius: '4px',
+    cursor: 'pointer',
+    marginLeft: '10px',
   },
   errorMessage: {
     color: '#dc3545',

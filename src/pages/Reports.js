@@ -13,10 +13,13 @@ const Reports = () => {
   const [requestsByDeviceType, setRequestsByDeviceType] = useState({});
   const [requestsByPriority, setRequestsByPriority] = useState({});
   const [requestsByStatusDetailed, setRequestsByStatusDetailed] = useState({});
+  const [totalCost, setTotalCost] = useState(0);
 
   useEffect(() => {
     const requestsRef = ref(rtdb, 'requests');
-    onValue(requestsRef, (snapshot) => {
+    const partsRequestsRef = ref(rtdb, 'partsRequests');
+
+    const unsubscribeRequests = onValue(requestsRef, (snapshot) => {
       const data = snapshot.val();
       if (data) {
         let requests = Object.values(data);
@@ -73,6 +76,34 @@ const Reports = () => {
       }
     });
 
+    const unsubscribePartsRequests = onValue(partsRequestsRef, (snapshot) => {
+      const data = snapshot.val();
+      if (data) {
+        let partsRequests = Object.values(data);
+
+        if (startDate && endDate) {
+          const start = new Date(startDate);
+          const end = new Date(endDate);
+          partsRequests = partsRequests.filter(pr => {
+            const requestDate = new Date(pr.createdAt);
+            return requestDate >= start && requestDate <= end;
+          });
+        }
+
+        const calculatedTotalCost = partsRequests.reduce((acc, pr) => {
+          if (pr.items) {
+            const itemCost = pr.items.reduce((sum, item) => {
+              const amount = parseFloat(item.amount);
+              return sum + (isNaN(amount) ? 0 : amount);
+            }, 0);
+            return acc + itemCost;
+          }
+          return acc;
+        }, 0);
+        setTotalCost(calculatedTotalCost);
+      }
+    });
+
     const usersRef = ref(rtdb, 'users');
     onValue(usersRef, (snapshot) => {
       const data = snapshot.val();
@@ -82,6 +113,10 @@ const Reports = () => {
 
       }
     });
+    return () => {
+      unsubscribeRequests();
+      unsubscribePartsRequests();
+    };
   }, [startDate, endDate]);
 
   const generatePdfReport = () => {
@@ -145,6 +180,10 @@ const Reports = () => {
             <div style={styles.reportRow}>
               <div style={styles.reportLabel}>Total Requests:</div>
               <div style={styles.reportValue}>{totalRequests}</div>
+            </div>
+            <div style={styles.reportRow}>
+              <div style={styles.reportLabel}>Total Parts Cost:</div>
+              <div style={styles.reportValue}>Rs. {totalCost.toFixed(2)}</div>
             </div>
           </div>
 
