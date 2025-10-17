@@ -1,13 +1,13 @@
-import React, { useState, useEffect } from 'react';
-import { rtdb } from '../firebase';
-import { ref, onValue } from 'firebase/database';
-import jsPDF from 'jspdf';
-import html2canvas from 'html2canvas';
+import React, { useState, useEffect } from "react";
+import { rtdb } from "../firebase";
+import { ref, onValue } from "firebase/database";
+import jsPDF from "jspdf";
+import html2canvas from "html2canvas";
 
 const Reports = () => {
   const [totalRequests, setTotalRequests] = useState(0);
-  const [startDate, setStartDate] = useState('');
-  const [endDate, setEndDate] = useState('');
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
 
   const [requestsByMonth, setRequestsByMonth] = useState({});
   const [requestsByDeviceType, setRequestsByDeviceType] = useState({});
@@ -16,8 +16,8 @@ const Reports = () => {
   const [totalCost, setTotalCost] = useState(0);
 
   useEffect(() => {
-    const requestsRef = ref(rtdb, 'requests');
-    const partsRequestsRef = ref(rtdb, 'partsRequests');
+    const requestsRef = ref(rtdb, "requests");
+    const partsRequestsRef = ref(rtdb, "partsRequests");
 
     const unsubscribeRequests = onValue(requestsRef, (snapshot) => {
       const data = snapshot.val();
@@ -28,7 +28,7 @@ const Reports = () => {
         if (startDate && endDate) {
           const start = new Date(startDate);
           const end = new Date(endDate);
-          requests = requests.filter(req => {
+          requests = requests.filter((req) => {
             const requestDate = new Date(req.createdAt);
             return requestDate >= start && requestDate <= end;
           });
@@ -36,11 +36,13 @@ const Reports = () => {
 
         setTotalRequests(requests.length);
 
-
         // Process requests by month
         const monthlyCounts = requests.reduce((acc, req) => {
           if (req.createdAt) {
-            const month = new Date(req.createdAt).toLocaleString('default', { month: 'short', year: 'numeric' });
+            const month = new Date(req.createdAt).toLocaleString("default", {
+              month: "short",
+              year: "numeric",
+            });
             acc[month] = (acc[month] || 0) + 1;
           }
           return acc;
@@ -84,7 +86,7 @@ const Reports = () => {
         if (startDate && endDate) {
           const start = new Date(startDate);
           const end = new Date(endDate);
-          partsRequests = partsRequests.filter(pr => {
+          partsRequests = partsRequests.filter((pr) => {
             const requestDate = new Date(pr.createdAt);
             return requestDate >= start && requestDate <= end;
           });
@@ -104,13 +106,11 @@ const Reports = () => {
       }
     });
 
-    const usersRef = ref(rtdb, 'users');
+    const usersRef = ref(rtdb, "users");
     onValue(usersRef, (snapshot) => {
       const data = snapshot.val();
       if (data) {
         const users = Object.values(data);
-        
-
       }
     });
     return () => {
@@ -120,39 +120,38 @@ const Reports = () => {
   }, [startDate, endDate]);
 
   const generatePdfReport = () => {
-    const input = document.getElementById('report-content');
+    const input = document.getElementById("report-content");
     html2canvas(input, { scale: 2 }).then((canvas) => {
-      const imgData = canvas.toDataURL('image/png');
-      const pdf = new jsPDF('p', 'mm', 'a4');
+      const imgData = canvas.toDataURL("image/png");
+      const pdf = new jsPDF("p", "mm", "a4");
       const imgWidth = 210;
       const pageHeight = 297;
       const imgHeight = (canvas.height * imgWidth) / canvas.width;
       let heightLeft = imgHeight;
       let position = 0;
 
-      pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+      pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight);
       heightLeft -= pageHeight;
 
       while (heightLeft >= 0) {
         position = heightLeft - imgHeight;
         pdf.addPage();
-        pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+        pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight);
         heightLeft -= pageHeight;
       }
-      pdf.save('monthly_report.pdf');
+      pdf.save("monthly_report.pdf");
     });
   };
 
   return (
     <div style={styles.container}>
       <h2 style={styles.pageTitle}>Monthly Report Summary</h2>
-      
+
       <div id="report-container" style={styles.reportsContainer}>
         <div id="report-content">
           <div style={styles.headerSection}>
             <img src="/logo.png" alt="Company Logo" style={styles.logo} />
             <div style={styles.addressContainer}>
-              <p style={styles.companyName}>National Water Supply & Drainage Board</p>
               <p style={styles.addressLine}>Regional Office,</p>
               <p style={styles.addressLine}>Siridammarathana Mawatha,</p>
               <p style={styles.addressLine}>Ampara</p>
@@ -227,7 +226,9 @@ const Reports = () => {
             ))}
           </div>
         </div>
-        <button style={styles.generateReportBtn} onClick={generatePdfReport}>Generate Detailed Report</button>
+        <button style={styles.generateReportBtn} onClick={generatePdfReport}>
+          Generate Detailed Report
+        </button>
       </div>
     </div>
   );
@@ -235,94 +236,94 @@ const Reports = () => {
 
 const styles = {
   container: {
-    padding: '20px',
-    fontFamily: 'Arial, sans-serif',
-    maxWidth: '1200px',
-    margin: '0 auto',
+    padding: "20px",
+    fontFamily: "Arial, sans-serif",
+    maxWidth: "1200px",
+    margin: "0 auto",
   },
   pageTitle: {
-    color: '#333',
-    textAlign: 'center',
-    marginBottom: '30px',
+    color: "#333",
+    textAlign: "center",
+    marginBottom: "30px",
   },
   reportsContainer: {
-    backgroundColor: '#f8f9fa',
-    border: '1px solid #e9ecef',
-    borderRadius: '8px',
-    padding: '30px',
-    boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
-    maxWidth: '800px',
-    margin: '0 auto',
+    backgroundColor: "#f8f9fa",
+    border: "1px solid #e9ecef",
+    borderRadius: "8px",
+    padding: "30px",
+    boxShadow: "0 2px 4px rgba(0, 0, 0, 0.1)",
+    maxWidth: "800px",
+    margin: "0 auto",
   },
   headerSection: {
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    marginBottom: '20px',
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    marginBottom: "20px",
   },
   logo: {
-    width: '100%',
-    height: '100px',
-    marginBottom: '30px',
+    width: "100%",
+    height: "100px",
+    marginBottom: "30px",
   },
   addressContainer: {
-    textAlign: 'center',
+    textAlign: "center",
   },
   companyName: {
-    fontWeight: 'bold',
-    fontSize: '20px',
-    margin: '0 0 5px 0',
+    fontWeight: "bold",
+    fontSize: "20px",
+    margin: "0 0 5px 0",
   },
   addressLine: {
-    margin: '0 0 2px 0',
-    fontSize: '14px',
+    margin: "0 0 2px 0",
+    fontSize: "14px",
   },
   dateFilter: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '10px',
-    marginBottom: '20px',
+    display: "flex",
+    alignItems: "center",
+    gap: "10px",
+    marginBottom: "20px",
   },
   dateInput: {
-    padding: '8px',
-    borderRadius: '4px',
-    border: '1px solid #ced4da',
+    padding: "8px",
+    borderRadius: "4px",
+    border: "1px solid #ced4da",
   },
   reportSection: {
-    marginBottom: '30px',
+    marginBottom: "30px",
   },
   reportRow: {
-    display: 'flex',
-    alignItems: 'center',
-    marginBottom: '20px',
-    borderBottom: '1px dashed #e9ecef',
-    paddingBottom: '10px',
+    display: "flex",
+    alignItems: "center",
+    marginBottom: "20px",
+    borderBottom: "1px dashed #e9ecef",
+    paddingBottom: "10px",
   },
   reportLabel: {
-    flex: '0 0 40%',
-    fontWeight: 'bold',
-    color: '#555',
+    flex: "0 0 40%",
+    fontWeight: "bold",
+    color: "#555",
   },
   reportValue: {
-    flex: '0 0 60%',
+    flex: "0 0 60%",
   },
   reportSelect: {
-    width: '100%',
-    padding: '8px',
-    borderRadius: '4px',
-    border: '1px solid #ced4da',
+    width: "100%",
+    padding: "8px",
+    borderRadius: "4px",
+    border: "1px solid #ced4da",
   },
   generateReportBtn: {
-    backgroundColor: '#0088FE',
-    color: 'white',
-    border: 'none',
-    padding: '12px 20px',
-    borderRadius: '5px',
-    cursor: 'pointer',
-    fontSize: '16px',
-    display: 'block',
-    margin: '0 auto',
-    transition: 'background-color 0.3s ease',
+    backgroundColor: "#0088FE",
+    color: "white",
+    border: "none",
+    padding: "12px 20px",
+    borderRadius: "5px",
+    cursor: "pointer",
+    fontSize: "16px",
+    display: "block",
+    margin: "0 auto",
+    transition: "background-color 0.3s ease",
   },
 };
 
