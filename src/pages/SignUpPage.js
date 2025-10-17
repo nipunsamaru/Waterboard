@@ -7,7 +7,7 @@ import { ref, set } from "firebase/database";
 const SignUpPage = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [role] = useState("user"); // Default role for new sign-ups
+  const [role] = useState("user"); // Default role for new sign-ups...
   const [error, setError] = useState("");
   const navigate = useNavigate();
 
